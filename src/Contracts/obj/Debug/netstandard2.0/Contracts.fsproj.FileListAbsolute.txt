@@ -1,8 +1,0 @@
-/Users/sebastian/Projects/message-db-event-store/src/Contracts/bin/Debug/netstandard2.0/Contracts.deps.json
-/Users/sebastian/Projects/message-db-event-store/src/Contracts/bin/Debug/netstandard2.0/Contracts.dll
-/Users/sebastian/Projects/message-db-event-store/src/Contracts/bin/Debug/netstandard2.0/Contracts.pdb
-/Users/sebastian/Projects/message-db-event-store/src/Contracts/obj/Debug/netstandard2.0/Contracts.fsprojAssemblyReference.cache
-/Users/sebastian/Projects/message-db-event-store/src/Contracts/obj/Debug/netstandard2.0/Contracts.AssemblyInfoInputs.cache
-/Users/sebastian/Projects/message-db-event-store/src/Contracts/obj/Debug/netstandard2.0/Contracts.AssemblyInfo.fs
-/Users/sebastian/Projects/message-db-event-store/src/Contracts/obj/Debug/netstandard2.0/Contracts.dll
-/Users/sebastian/Projects/message-db-event-store/src/Contracts/obj/Debug/netstandard2.0/Contracts.pdb

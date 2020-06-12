@@ -1,3 +1,0 @@
-/Users/sebastian/Projects/message-db-event-store/src/Server/obj/Debug/netcoreapp3.1/Server.fsprojAssemblyReference.cache
-/Users/sebastian/Projects/message-db-event-store/src/Server/obj/Debug/netcoreapp3.1/Server.AssemblyInfoInputs.cache
-/Users/sebastian/Projects/message-db-event-store/src/Server/obj/Debug/netcoreapp3.1/Server.AssemblyInfo.fs
