@@ -1,0 +1,3 @@
+group ThinLayer
+FSharp.Core
+Npgsql

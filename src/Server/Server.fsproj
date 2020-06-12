@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="RuntimeEnvironment.fs" />
+    <Compile Include="Async.fs" />
+    <Compile Include="Agent.fs" />
+    <Compile Include="MessageQueue.fs" />
+    <Compile Include="Engine.fs" />
+    <Compile Include="NativeInterface.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Contracts\Contracts.fsproj" />
+    <ProjectReference Include="..\ThinLayer\ThinLayer.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

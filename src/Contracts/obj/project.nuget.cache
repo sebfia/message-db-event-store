@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "CeNsy/4qvtfOLr5jQtfTlYLhfX2Gbpi5fQX/vaNP+YYcQ6eq/orvIQ3Ums0emiZOIrrEHGxnFSsa74C39gEDAA==",
+  "success": true,
+  "projectFilePath": "/mnt/e/message-db-event-store/src/Contracts/Contracts.fsproj",
+  "expectedPackageFiles": [
+    "/root/.nuget/packages/fsharp.core/4.7.1/fsharp.core.4.7.1.nupkg.sha512",
+    "/usr/share/dotnet/sdk/NuGetFallbackFolder/microsoft.netcore.platforms/1.1.0/microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "/root/.nuget/packages/netstandard.library/2.0.3/netstandard.library.2.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
