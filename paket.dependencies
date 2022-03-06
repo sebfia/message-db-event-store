@@ -1,41 +1,37 @@
+group QuestdbEventStore
+    source https://api.nuget.org/v3/index.json
+    storage:none
+    nuget FSharp.Core content: none, framework: net6.0
 
 group Server
     source https://api.nuget.org/v3/index.json
     storage:none
-    nuget FSharp.Core redirects: force, framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget Microsoft.Extensions.Configuration framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget Microsoft.Extensions.Configuration.FileExtensions framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget Microsoft.Extensions.Configuration.Json framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget Microsoft.Extensions.Configuration.EnvironmentVariables framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget FsPickler framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget Argu framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget NLog framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget NATS.Client framework: >= netcoreapp2.0, netstandard2.0
-    nuget Npgsql framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget Polly framework: >= netcoreapp2.0, >= netstandard2.0
+    nuget FSharp.Core content: none, framework: net6.0
+    nuget Microsoft.Extensions.Configuration framework: net6.0
+    nuget Microsoft.Extensions.Configuration.FileExtensions framework: net6.0
+    nuget Microsoft.Extensions.Configuration.Json framework: net6.0
+    nuget Microsoft.Extensions.Configuration.EnvironmentVariables framework: net6.0
+    nuget FsPickler framework: net6.0
+    nuget Argu framework: net6.0
+    nuget NLog framework: net6.0
+    nuget NATS.Client framework: net6.0
+    nuget Npgsql framework: net6.0
+    nuget Polly framework: net6.0
 
 group Contracts
     source https://api.nuget.org/v3/index.json
     storage:none
-    nuget FSharp.Core redirects: force, framework: >= netcoreapp2.0, >= netstandard2.0
+    nuget FSharp.Core content: none, framework: net6.0
 
 group ThinLayer
     source https://api.nuget.org/v3/index.json
     storage:none
-    nuget FSharp.Core redirects: force, framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget Npgsql framework: >= netstandard2.0
+    nuget FSharp.Core content: none, framework: net6.0
+    nuget Npgsql framework: net6.0
     
 group Client
     source https://api.nuget.org/v3/index.json
     storage:none
-    nuget FSharp.Core redirects: force, framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget FsPickler framework: >= netcoreapp2.0, >= netstandard2.0
-    nuget NLog framework: >= netcoreapp2.0, >= netstandard2.0
-
-group Spiking
-    source https://api.nuget.org/v3/index.json
-    nuget FSharp.Core redirects: force
-    nuget Npgsql
-    nuget NATS.Client
-    nuget Polly
-    nuget NLog
+    nuget FSharp.Core content: none, framework: net6.0
+    nuget FsPickler framework: net6.0
+    nuget NLog framework: net6.0
