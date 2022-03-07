@@ -10,8 +10,6 @@ module TcpServer =
     open MBrace.FsPickler
     open EventStore.Native.Contracts
     open EventStore
-    open Contracts
-    open NLog
 
     type DateTime with
         static member private epoch = DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)

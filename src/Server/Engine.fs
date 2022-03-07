@@ -22,12 +22,12 @@ module Engine =
             }
         let createWriteFunc connection streamName (eventId: Guid) eventType data metadata expectedVersion = 
             [
-                streamName |> Sql.stringParameter "stream_name" |> Some
                 (eventId.ToString()) |> Sql.stringParameter "id" |> Some
+                streamName |> Sql.stringParameter "stream_name" |> Some
                 eventType |> Sql.stringParameter "type" |> Some
                 data |> Sql.jsonParameter "data" |> Some
-                Option.map (fun v -> Sql.jsonParameter "metadata" v) metadata
-                Option.map (fun v -> Sql.int64Parameter "expected_version" v) expectedVersion
+                metadata |> Option.map (Sql.jsonParameter "metadata") 
+                expectedVersion |> Option.map (Sql.int64Parameter "expected_version")
             ]
             |> List.choose id
             |> Sql.createFunc connection "write_message"
@@ -50,7 +50,7 @@ module Engine =
             let token = defaultArg cancellationToken CancellationToken.None
             use connection = new NpgsqlConnection(connectionString)
             do! Sql.setRole connection token "message_store" |> Async.Ignore
-            let func = createWriteFunc connection streamName message.Id message.Data message.Data message.Metadata expectedVersion
+            let func = createWriteFunc connection streamName message.Id message.EventType message.Data message.Metadata expectedVersion
             match! Sql.executeScalarAsync<int64> connection [|func|] token with
             | Error exn -> return Error exn
             | Ok lst -> return lst |> List.head |> Ok

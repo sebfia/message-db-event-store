@@ -67,7 +67,7 @@ module Sql =
 
         member this.timestamp(column: string) =
             match columnDict.TryGetValue(column) with
-            | true, columnIndex -> reader.GetTimeStamp(columnIndex)
+            | true, columnIndex -> reader.GetDateTime(columnIndex)
             | false, _ -> failToRead column "timestamp"
 
         member this.timestampOrNone(column: string) =
