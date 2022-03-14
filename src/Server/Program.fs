@@ -17,7 +17,7 @@ module Program =
     let defaultLogLevel = Info
 
     type Arguments =
-        | [<Unique>] [<Mandatory>] [<AltCommandLine("-c")>] ConnectionString of string
+        | [<Unique>] [<Mandatory>] [<AltCommandLine("-c")>] [<CustomAppSettings("CONNECTION_STRING")>] ConnectionString of string
         | [<Unique>] [<AltCommandLine("-a")>] IPAddress of string
         | [<Unique>] [<AltCommandLine("-p")>] Port of int
         | [<Unique>] [<AltCommandLine("-o")>] FanoutDriver of FanoutDriver
@@ -50,8 +50,9 @@ module Program =
         config.AddTarget(consoleTarget)
         NLog.LogManager.Configuration <- config
         try
+            let reader = EnvironmentVariableConfigurationReader() :> IConfigurationReader
             let parser = ArgumentParser.Create<Arguments>(programName = "Server")
-            let results = parser.Parse(args)
+            let results = parser.Parse(args, configurationReader = reader)
             let directory =
                 match results.TryGetResult ConnectionString with
                 | Some connStr ->
