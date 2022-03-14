@@ -30,7 +30,7 @@ module Contracts =
 
     type BatchSize = All | Limited of int64
     type SuccessResponse =
-        | MessageAppended of streamName:string*messageNumber:int64
+        | MessageAppended of RecordedMessage
         | MessagesAppended of streamName:string*lastMessageNumber:int64
         | StreamMessagesRead of streamName:string*recordedMessages:RecordedMessage array
         | CategoryMessagesRead of categoryName:string*recordedMessages: RecordedMessage array

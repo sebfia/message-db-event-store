@@ -10,7 +10,7 @@ module Client =
     type IEventStoreClient =
             // abstract member CreateNewStream: category:string -> streamId:string -> Async<Response>
             // abstract member GetStreamsInCategory: category:string -> Async<Response>
-            abstract member AppendMessage: streamName:string -> expectedVersion:int64 -> event:UnrecordedMessage -> Async<Result<(string*int64),MessageDbError>>
+            abstract member AppendMessage: streamName:string -> expectedVersion:int64 -> event:UnrecordedMessage -> Async<Result<RecordedMessage,MessageDbError>>
             abstract member AppendMessages: streamName:string -> expectedVersion:int64 -> events:UnrecordedMessage array -> Async<Response>
             abstract member ReadStreamMessagesForward: streamName:string -> fromVersion:int64 option -> numMessages: BatchSize -> Async<Result<(string*RecordedMessage array),MessageDbError>>
             abstract member ReadMessageStoreVersion: unit -> Async<Result<string,MessageDbError>>
@@ -38,7 +38,7 @@ module Client =
             | _ -> None
 
         let (|MessageAppended|_|) = function
-            | MessageAppended (n,v) -> Some (n,v)
+            | MessageAppended (msg) -> Some (msg)
             | _ -> None
 
         let (|MessagesRead|_|) = function
@@ -53,7 +53,7 @@ module Client =
             match resp with
             | Error e -> Error e
             // | Ok x -> match x with | MessageAppended (n,v) -> Ok (n,v) | _ -> Error InternalMessagingError
-            | Ok x -> match x with | MessageAppended (n,v) -> Ok (n,v) | _ -> Error InternalMessagingError
+            | Ok x -> match x with | MessageAppended (msg) -> Ok (msg) | _ -> Error InternalMessagingError
         let messagesRead = function
             | Error e -> Error e
             | Ok x -> match x with | MessagesRead (n,msg) -> Ok (n,msg) | _ -> Error InternalMessagingError

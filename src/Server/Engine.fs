@@ -121,7 +121,18 @@ module Engine =
                 let func = createWriteFunc connection streamName message.Id message.EventType message.Data message.Metadata expectedVersion
                 match! Sql.executeScalarAsync<int64> connection [|func|] cts.Token with
                 | Error exn -> return Error (exn |> toDbError)
-                | Ok lst -> return lst |> List.head |> Ok
+                | Ok lst ->
+                    let myVersion = lst |> List.head
+                    let func =
+                        [ 
+                            Sql.stringParameter "stream_name" streamName
+                            Sql.int64Parameter "position" myVersion
+                        ]
+                        |> Sql.createFunc connection "get_stream_messages"
+                    match! Sql.executeQueryAsync connection func cts.Token readMessage with
+                    | Error exn -> return Error (exn |> toDbError)
+                    | Ok msg -> return msg |> List.head |> Ok
+
         }
         
         member __.WriteStreamMessages (streamName: string, messages: UnrecordedMessage array, ?expectedVersion: int64, ?cancellationToken: CancellationToken) = async {

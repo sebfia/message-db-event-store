@@ -31,7 +31,7 @@ module TcpServer =
                     | Error err -> 
                         if logger.IsWarnEnabled then sprintf "Error appending event to stream: %s%s%A" streamName Environment.NewLine err |> logger.Warn
                         Error err
-                    | Ok num -> Ok (MessageAppended (streamName, num))
+                    | Ok recordedMessage -> Ok (MessageAppended recordedMessage)
                 let bytes = serializer.Pickle response
                 let stream = client.GetStream()
                 do! stream.AsyncWriteBytes bytes

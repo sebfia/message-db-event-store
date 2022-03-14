@@ -109,7 +109,7 @@ let metaStr = serialize metadata
 
 let client = EventStore.Client.createClient IPAddress.Loopback 9781
 
-let response = client.AppendMessage "user-123" 2L {Id=Guid.NewGuid(); EventType="Test"; Metadata=Some metaStr; Data="{\"Bloshuettn\":\"Bist Deppat\"}"} |> Async.RunSynchronously
+let response = client.AppendMessage "user-123" 3L {Id=Guid.NewGuid(); EventType="Test"; Metadata=Some metaStr; Data="{\"Bloshuettn\":\"Bist Deppat\"}"} |> Async.RunSynchronously
 let messages = client.ReadStreamMessagesForward "user-123" None EventStore.Native.Contracts.BatchSize.All |> Async.RunSynchronously
 
 let version = client.ReadMessageStoreVersion() |> Async.RunSynchronously
