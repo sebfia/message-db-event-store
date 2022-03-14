@@ -23,9 +23,10 @@ module Contracts =
         | WrongExpectedVersion of expectedVersion: int64 * streamName: string * streamVersion: int64
         | StreamNameIncorrect of string
         | ErrorWritingEvent of streamName: string * eventType: string
-        | UnableToConnectToDb
+        | UnableToConnectToDb of host: string
         | TimeoutWritingNewEvent of streamName: string
         | UnexpectedException of string
+        | InternalMessagingError
 
     type BatchSize = All | Limited of int64
     type SuccessResponse =

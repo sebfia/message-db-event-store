@@ -10,10 +10,10 @@ module Client =
     type IEventStoreClient =
             // abstract member CreateNewStream: category:string -> streamId:string -> Async<Response>
             // abstract member GetStreamsInCategory: category:string -> Async<Response>
-            abstract member AppendMessage: streamName:string -> expectedVersion:int64 -> event:UnrecordedMessage -> Async<Response>
+            abstract member AppendMessage: streamName:string -> expectedVersion:int64 -> event:UnrecordedMessage -> Async<Result<(string*int64),MessageDbError>>
             abstract member AppendMessages: streamName:string -> expectedVersion:int64 -> events:UnrecordedMessage array -> Async<Response>
-            abstract member ReadStreamMessagesForward: streamName:string -> fromVersion:int64 option -> numMessages: BatchSize -> Async<Response>
-            abstract member ReadMessageStoreVersion: unit -> Async<Response>
+            abstract member ReadStreamMessagesForward: streamName:string -> fromVersion:int64 option -> numMessages: BatchSize -> Async<Result<(string*RecordedMessage array),MessageDbError>>
+            abstract member ReadMessageStoreVersion: unit -> Async<Result<string,MessageDbError>>
             // abstract member ReadStreamEventsForwardLimited: streamName:string -> fromVersion:int64 -> numEvents:int64 -> Async<Response>
             // abstract member ReadStreamEventsBackwards: streamName:string -> fromVersion:int64 -> Async<Response>
             // abstract member ReadStreamEventsBackwardsLimited: streamName:string -> fromVersion:int64 -> numEvents:int64 -> Async<Response>
@@ -32,7 +32,33 @@ module Client =
             tcpClient.Close()
             return translateResponse responseBytes
         }
-        let translateResponse buffer = serializer.UnPickle<Response> buffer
+
+        let (|MessageStoreVersionRead|_|) = function
+            | MessageStoreVersionRead v -> Some v
+            | _ -> None
+
+        let (|MessageAppended|_|) = function
+            | MessageAppended (n,v) -> Some (n,v)
+            | _ -> None
+
+        let (|MessagesRead|_|) = function
+            | StreamMessagesRead (n,msg) -> Some (n,msg)
+            | _ -> None
+
+        let storeVersionRead (resp: Response) =
+            match resp with
+            | Error e -> Error e
+            | Ok x -> match x with | MessageStoreVersionRead v -> Ok v | _ -> Error InternalMessagingError
+        let messageAppended (resp: Response) =
+            match resp with
+            | Error e -> Error e
+            // | Ok x -> match x with | MessageAppended (n,v) -> Ok (n,v) | _ -> Error InternalMessagingError
+            | Ok x -> match x with | MessageAppended (n,v) -> Ok (n,v) | _ -> Error InternalMessagingError
+        let messagesRead = function
+            | Error e -> Error e
+            | Ok x -> match x with | MessagesRead (n,msg) -> Ok (n,msg) | _ -> Error InternalMessagingError
+
+        let deserializeResponse buffer = serializer.UnPickle<Response> buffer
         // let createNewStream category streamId =
         //     let createRequest() = CreateStream(category, streamId) |> serializer.Pickle |> async.Return
         //     doWhileConnected createRequest translateResponse |> async.ReturnFrom
@@ -41,16 +67,16 @@ module Client =
         //     doWhileConnected createRequest translateResponse |> async.ReturnFrom
         let appendMessage streamName expectedVersion message =
             let createRequest() = AppendMessage(streamName,expectedVersion,message) |> serializer.Pickle
-            doWhileConnected createRequest translateResponse |> async.ReturnFrom
+            doWhileConnected createRequest (deserializeResponse >> messageAppended) |> async.ReturnFrom
         let appendMessages streamName expectedVersion events =
             let createRequest() = AppendMessages(streamName,expectedVersion,events) |> serializer.Pickle
-            doWhileConnected createRequest translateResponse |> async.ReturnFrom
+            doWhileConnected createRequest deserializeResponse |> async.ReturnFrom
         let readStreamMessagesForward streamName fromVersion numMessages =
             let createRequest() = ReadStreamMessages(streamName,fromVersion, numMessages) |> serializer.Pickle
-            doWhileConnected createRequest translateResponse |> async.ReturnFrom
+            doWhileConnected createRequest (deserializeResponse >> messagesRead) |> async.ReturnFrom
         let readMessageStoreVersion () =
             let createRequest() = ReadMessageStoreVersion |> serializer.Pickle
-            doWhileConnected createRequest translateResponse |> async.ReturnFrom
+            doWhileConnected createRequest (deserializeResponse >> storeVersionRead) |> async.ReturnFrom
         // let readStreamEventsForwardLimited streamName fromVersion numEvents =
         //     let createRequest() = ReadStreamEventsForwardLimited(streamName,fromVersion,numEvents) |> serializer.Pickle |> async.Return
         //     doWhileConnected createRequest translateResponse |> async.ReturnFrom
