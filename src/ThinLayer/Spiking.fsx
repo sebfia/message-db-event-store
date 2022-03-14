@@ -1,5 +1,8 @@
 #if INTERACTIVE
 #r "nuget: Npgsql"
+#r "nuget: FsPickler"
+#r "../Client/bin/Debug/net6.0/Contracts.dll"
+#r "../Client/bin/Debug/net6.0/Client.dll"
 #load "../Contracts/Contracts.fs"
 #load "ThinLayer.fs"
 #load "../Server/Engine.fs"
@@ -32,8 +35,81 @@ let message = {
     Native.Contracts.UnrecordedMessage.Data = "{\"username\":\"sebfia\", \"mapped-logon-name\":\"Sebasterich\", \"logon-system\":\"ADC\"}"
 }
 
-let expectedVersion = -1L
+let expectedVersion = 0L
 
 let version = engine.WriteStreamMessage("user-123", message, expectedVersion, tokenSource.Token) |> Async.RunSynchronously
 
 let messages = engine.GetLastStreamMessage("user-123") |> Async.RunSynchronously
+
+open System
+open System.Net
+open System.Net.Sockets
+open MBrace.FsPickler
+open EventStore.Native
+
+// let binarySerializer = FsPickler.CreateBinarySerializer()
+
+// let request = AppendMessage ("user_123",1L,{Id=System.Guid.NewGuid();EventType="Test";Metadata=None;Data="{\"Bloshuettn\":\"Bist Deppat\"}"})
+
+// let tcp = new TcpClient()
+// tcp.Connected
+// tcp.Connect(IPEndPoint(IPAddress.Loopback, 9781))
+// let stream = tcp.GetStream()
+// stream.Write([||], 0, 0)
+// stream.WriteAsync()
+// tcp.Dispose()
+// stream.Dispose()
+
+let client = EventStore.Client.createClient IPAddress.Loopback 9781
+
+let response = client.AppendMessage "user-123" 2L {Id=Guid.NewGuid();EventType="Test";Metadata=Some "{'system': 'delfin','message-type': 'event','message-version': 1}";Data="{\"Bloshuettn\":\"Bist Deppat\"}"} |> Async.RunSynchronously
+let err = response |> function | Error e -> e | _ -> failwith "unexpected"
+printfn "%A" err
+
+open System
+open System.Text.RegularExpressions
+
+let regex = Regex("Wrong expected version: (?<expected_version>\d+) \(Stream: (?<stream>\w+[\-\/\+\@\#]?\w+), Stream Version: (?<stream_version>\-?\d+)\)", RegexOptions.Compiled ||| RegexOptions.Singleline ||| RegexOptions.CultureInvariant)
+regex.IsMatch "Wrong expected version: 1 (Stream: user_123, Stream Version: -1)"
+regex.IsMatch "Wrong expected version: 1 (Stream: user-123, Stream Version: 2)"
+let matches = regex.Matches "Wrong expected version: 1 (Stream: user_123, Stream Version: -1)"
+let m = regex.Match "Wrong expected version: 1 (Stream: user_123, Stream Version: -1)"
+let m = regex.Match "Ich was nix"
+m.Success
+m.Groups["expected_version"].Value
+m.Groups["stream"].Value
+m.Groups["stream_version"].Value
+
+#r "nuget: FSharp.SystemTextJson"
+open System.Text.Json
+open System.Text.Json.Serialization
+
+// let opts = System.Text.Json.Serialization.JsonFSharpOptions()
+
+let opts = JsonSerializerOptions(JsonSerializerDefaults())
+let serialize<'a> (a: 'a) = 
+    System.Text.Json.JsonSerializer.Serialize(a, opts)
+
+type Test = {
+    [<JsonPropertyName("system")>]
+    LoginSystem: string
+    [<JsonPropertyName("message-type")>]
+    MessageType: string
+    [<JsonPropertyName("message-version")>]
+    MessageVersion: int
+}
+
+let metadata = {
+    LoginSystem = "delfin"
+    MessageType = "event"
+    MessageVersion = 1
+}
+
+let metaStr = serialize metadata
+
+let client = EventStore.Client.createClient IPAddress.Loopback 9781
+
+let response = client.AppendMessage "user-123" 2L {Id=Guid.NewGuid(); EventType="Test"; Metadata=Some metaStr; Data="{\"Bloshuettn\":\"Bist Deppat\"}"} |> Async.RunSynchronously
+let messages = client.ReadStreamMessagessForward "user-123" None EventStore.Native.Contracts.BatchSize.All |> Async.RunSynchronously
+
+let version = client.ReadMessageStoreVersion() |> Async.RunSynchronously

@@ -79,9 +79,9 @@ module MessageQueue =
             match availableWorkers |> Array.mapi (fun i b -> i,b) |> Array.where (fun (_,b) -> b) |> Array.tryHead with
             | Some (i,_) -> Some (i,workers.[i])
             | _ -> None
-        let delay ms f =
+        let delay (timespan: TimeSpan) f =
             async {
-                do! Async.Sleep ms
+                do! Async.Sleep timespan
                 do f()
             } |> Async.StartImmediate
         let controller = 
@@ -118,7 +118,7 @@ module MessageQueue =
                                                             Subscription = s
                                                             Handler = handler
                                                         }
-                                                s.Start |> delay 50
+                                                s.Start |> delay (TimeSpan.FromMilliseconds(50))
                                                 ch.Reply(Ok subject)
                                                 return subs
                                         })

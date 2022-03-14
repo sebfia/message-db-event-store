@@ -189,7 +189,9 @@ module Sql =
             do! reader.CloseAsync() |> Async.AwaitTask
             reader.Dispose()
             return Ok (List.ofSeq result)
-        with e -> return Error e
+        with 
+        :? AggregateException as e -> return Error (e.InnerExceptions |> Seq.head)
+        | e -> return Error e
     }
         
     let executeScalarAsync<'T> (connection: NpgsqlConnection) (commands: NpgsqlCommand array) cancellationToken = async {
@@ -207,7 +209,9 @@ module Sql =
                 o |> unbox |> results.Add
             do! tx.CommitAsync mergedToken |> Async.AwaitTask
             return List.ofSeq results |> Ok
-        with e -> return Error e
+        with 
+        :? AggregateException as e -> return Error (e.InnerExceptions |> Seq.head)
+        | e -> return Error e
     }
 
     let setRole (connection: NpgsqlConnection) cancellationToken roleName = async {

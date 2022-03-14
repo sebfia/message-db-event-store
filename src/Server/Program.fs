@@ -17,7 +17,7 @@ module Program =
     let defaultLogLevel = Info
 
     type Arguments =
-        | [<Unique>] [<Mandatory>] [<AltCommandLine("-d")>] Directory of string
+        | [<Unique>] [<Mandatory>] [<AltCommandLine("-c")>] ConnectionString of string
         | [<Unique>] [<AltCommandLine("-a")>] IPAddress of string
         | [<Unique>] [<AltCommandLine("-p")>] Port of int
         | [<Unique>] [<AltCommandLine("-o")>] FanoutDriver of FanoutDriver
@@ -27,7 +27,7 @@ module Program =
         interface IArgParserTemplate with
             member s.Usage =
                 match s with
-                | Directory _ -> "specify a working directory."
+                | ConnectionString _ -> "specify a connection string."
                 | IPAddress _ -> sprintf "[optional] specify the ip-address to listen on. Default = %s" defaultIp
                 | Port _ -> sprintf "[optional] specify the port to listen on. Default = %i" defaultPort
                 | FanoutDriver _ -> sprintf "[optional] specify the fanout driver for newly recorded events. Default = %s" (sprintf "%A" defaultFanout |> fun s -> s.ToLower())
@@ -50,14 +50,14 @@ module Program =
         config.AddTarget(consoleTarget)
         NLog.LogManager.Configuration <- config
         try
-            let parser = ArgumentParser.Create<Arguments>(programName = "EventStore.exe")
+            let parser = ArgumentParser.Create<Arguments>(programName = "Server")
             let results = parser.Parse(args)
             let directory =
-                match results.TryGetResult Directory with
-                | Some directory ->
-                    if Directory.Exists directory |> not then results.Raise("specified directory does not exist!", ErrorCode.CommandLine)
-                    directory
-                | _ -> results.Raise("No directory specified!", ErrorCode.HelpText, true)
+                match results.TryGetResult ConnectionString with
+                | Some connStr ->
+                    // if Directory.Exists directory |> not then results.Raise("specified directory does not exist!", ErrorCode.CommandLine)
+                    connStr
+                | _ -> results.Raise("No connection-string specified!", ErrorCode.HelpText, true)
             let ip = 
                 match results.GetResult(IPAddress, defaultValue = defaultIp) |> IPAddress.TryParse with
                 | (true,x) -> x
@@ -68,10 +68,10 @@ module Program =
             config.AddRule(logLevel, Off |> mapLogLevel, consoleTarget, "*")
             let logger = NLog.LogManager.GetLogger "Program"
             logger.Info "Starting event store."
-            logger.Info("Using directory {0} and listening on address tcp://{1}:{2}", directory, ip, port)
+            logger.Info("Using connection-string '{0}' and listening on address tcp://{1}:{2}", directory, ip, port)
             if logger.IsInfoEnabled then sprintf "Using fanout driver: %A" fanout |> logger.Info
             
-            let endpoint = System.Net.IPEndPoint(ip, port)
+            let endpoint = IPEndPoint(ip, port)
             let waitHandle = new ManualResetEvent(false)
             match RuntimeEnvironment.getRunMode() with
             | RuntimeEnvironment.Container _ ->
@@ -80,7 +80,7 @@ module Program =
             | RuntimeEnvironment.Cmd _ ->
                 Console.TreatControlCAsInput <- false
                 Console.CancelKeyPress |> Observable.add (fun x -> x.Cancel <- true; waitHandle.Set() |> ignore)
-            let disposable = TcpServer.start directory endpoint
+            let disposable = Native.TcpServer.start directory endpoint
             logger.Info "EventStore is started."
             waitHandle.WaitOne() |> ignore
             logger.Debug "Stopping EventStore."
