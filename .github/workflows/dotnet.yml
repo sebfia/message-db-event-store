@@ -17,6 +17,10 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
+    - name: Install paket as global tool
+      run: dotnet tool install -g paket
+    - name: Install dependencies using paket
+      run: paket install
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
