@@ -31,7 +31,7 @@ jobs:
     - name: Pack Nuget
       run: dotnet pack --configuration Release /p:Version=${VERSION} ./src/Client/Client.fsproj
     - name: Publish Nuget
-      run: dotnet nuget push ./src/Client/bin/Release/*.nupkg --source https://nuget.pkg.github.com/sebfia/index.json --api-key ${NUGET_AUTH_TOKEN}
+      run: dotnet nuget push ./src/Client/bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_AUTH_TOKEN}
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_PUSH }}
     
