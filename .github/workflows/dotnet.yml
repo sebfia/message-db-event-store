@@ -16,6 +16,9 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
+        source-url: https://nuget.pkg.github.com/sebfia/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.NUGET_PUSH}}
     - name: Install paket as global tool
       run: dotnet tool install -g paket
     - name: Restore local tools
@@ -23,15 +26,15 @@ jobs:
     - name: Install dependencies using paket
       run: paket install
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ./src/Client/Client.fsproj
     - name: Set VERSION variable from tag
       run: echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
     - name: Build
-      run: dotnet build -c Release --no-restore /p:Version=${VERSION}
+      run: dotnet build -c Release --no-restore /p:Version=${VERSION} ./src/Client/Client.fsproj
     - name: Pack Nuget
-      run: dotnet pack --configuration Release /p:Version=${VERSION} --no-build --output .
+      run: dotnet pack --configuration Release /p:Version=${VERSION} ./src/Client/Client.fsproj
     - name: Publish Nuget
-      run: dotnet nuget push NuGet.Workflow.${VERSION}.nupkg --source https://nuget.pkg.github.com/sebfia/index.json --api-key ${NUGET_PUSH}
+      run: dotnet nuget push ./src/Client/bin/Release/*.nupkg
       env:
-        NUGET_PUSH: ${{ secrets.NUGET_PUSH }}
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_PUSH }}
     
