@@ -1,64 +1,65 @@
 #if INTERACTIVE
-#r "nuget: Npgsql"
+// #r "nuget: Npgsql"
 #r "nuget: FsPickler"
 #r "../Client/bin/Debug/net6.0/Contracts.dll"
 #r "../Client/bin/Debug/net6.0/Client.dll"
-#load "../Contracts/Contracts.fs"
-#load "ThinLayer.fs"
-#load "../Server/Engine.fs"
+// #load "../Contracts/Contracts.fs"
+// #load "ThinLayer.fs"
+// #load "../Server/Engine.fs"
 #endif
 
-open Npgsql
-open System.Threading
-open EventStore
-let tokenSource = new CancellationTokenSource() 
-let connStr = "Host=localhost;Port=5432;Database=message_store;Username=postgres;Password=summersun"
-let connection = new NpgsqlConnection(connStr)
-let rres = Sql.setRole connection tokenSource.Token "message_store" |> Async.RunSynchronously
-let func = [ Sql.createParameter Sql.Varchar "stream_name" "someStream-123"] |> Sql.createFunc connection "get_stream_messages"
-let result = Sql.executeQueryAsync connection func tokenSource.Token (fun r -> System.Guid.Parse(r.string "id"), r.string "type", r.int64 "position", r.stringOrNone "data", r.stringOrNone "metadata", r.dateTime "time") |> Async.RunSynchronously
+// open Npgsql
+// open System.Threading
+// open EventStore
+// let tokenSource = new CancellationTokenSource() 
+// let connStr = "Host=localhost;Port=5432;Database=message_store;Username=postgres;Password=summersun"
+// let connection = new NpgsqlConnection(connStr)
+// let rres = Sql.setRole connection tokenSource.Token "message_store" |> Async.RunSynchronously
+// let func = [ Sql.createParameter Sql.Varchar "stream_name" "someStream-123"] |> Sql.createFunc connection "get_stream_messages"
+// let result = Sql.executeQueryAsync connection func tokenSource.Token (fun r -> System.Guid.Parse(r.string "id"), r.string "type", r.int64 "position", r.stringOrNone "data", r.stringOrNone "metadata", r.dateTime "time") |> Async.RunSynchronously
 
-func.Dispose()
-connection.Close()
-connection.Dispose()
+// func.Dispose()
+// connection.Close()
+// connection.Dispose()
 
-let guid = System.Guid.NewGuid()
-guid.ToString()
-guid.ToString("N")
+// let guid = System.Guid.NewGuid()
+// guid.ToString()
+// guid.ToString("N")
 
-let engine = Engine.MessageStore(connStr)
+// let engine = Engine.MessageStore(connStr)
 
-let message = {
-    Native.Contracts.UnrecordedMessage.Id = System.Guid.NewGuid()
-    Native.Contracts.UnrecordedMessage.EventType = "Created"
-    Native.Contracts.UnrecordedMessage.Metadata = Some "{\"message-type\":\"event\", \"message-version\":1, \"system\":\"delfin\"}"
-    Native.Contracts.UnrecordedMessage.Data = "{\"username\":\"sebfia\", \"mapped-logon-name\":\"Sebasterich\", \"logon-system\":\"ADC\"}"
-}
+// let message = {
+//     Native.Contracts.UnrecordedMessage.Id = System.Guid.NewGuid()
+//     Native.Contracts.UnrecordedMessage.EventType = "Created"
+//     Native.Contracts.UnrecordedMessage.Metadata = Some "{\"message-type\":\"event\", \"message-version\":1, \"system\":\"delfin\"}"
+//     Native.Contracts.UnrecordedMessage.Data = "{\"username\":\"sebfia\", \"mapped-logon-name\":\"Sebasterich\", \"logon-system\":\"ADC\"}"
+// }
 
-let expectedVersion = 0L
+// let expectedVersion = 0L
 
-let version = engine.WriteStreamMessage("user-123", message, expectedVersion, tokenSource.Token) |> Async.RunSynchronously
+// let version = engine.WriteStreamMessage("user-123", message, expectedVersion, tokenSource.Token) |> Async.RunSynchronously
 
-let messages = engine.GetLastStreamMessage("user-123") |> Async.RunSynchronously
+// let messages = engine.GetLastStreamMessage("user-123") |> Async.RunSynchronously
 
 open System
 open System.Net
 open System.Net.Sockets
-open MBrace.FsPickler
+// open MBrace.FsPickler
 open EventStore.Native
 
 // let binarySerializer = FsPickler.CreateBinarySerializer()
 
 // let request = AppendMessage ("user_123",1L,{Id=System.Guid.NewGuid();EventType="Test";Metadata=None;Data="{\"Bloshuettn\":\"Bist Deppat\"}"})
 
-// let tcp = new TcpClient()
-// tcp.Connected
-// tcp.Connect(IPEndPoint(IPAddress.Loopback, 9781))
-// let stream = tcp.GetStream()
-// stream.Write([||], 0, 0)
-// stream.WriteAsync()
-// tcp.Dispose()
-// stream.Dispose()
+let tcp = new TcpClient()
+tcp.Connected
+tcp.Connect(IPEndPoint(IPAddress.Loopback, 9009))
+let stream = tcp.GetStream()
+let msg = "HHHHHHHHEEEEEELLLLLLOOOOOOOO\n" |> Text.Encoding.UTF8.GetBytes 
+stream.Write(msg, 0, msg.Length)
+
+tcp.Dispose()
+stream.Dispose()
 
 let client = EventStore.Client.createClient IPAddress.Loopback 9781
 
@@ -83,12 +84,28 @@ m.Groups["stream_version"].Value
 #r "nuget: FSharp.SystemTextJson"
 open System.Text.Json
 open System.Text.Json.Serialization
+open System.Text.RegularExpressions
 
-// let opts = System.Text.Json.Serialization.JsonFSharpOptions()
+let getEventType =
+    let tagRegex = Regex("\\{\\\"(?<EventType>\\w+)\\\"\\:(.*)", RegexOptions.Compiled ||| RegexOptions.Singleline ||| RegexOptions.CultureInvariant)
+    fun (s: string) ->
+        match tagRegex.Match(s) with
+        | m when m.Success -> Some m.Groups["EventType"].Value
+        | _ -> None
+
 
 let opts = JsonSerializerOptions(JsonSerializerDefaults())
+opts.Converters.Add(JsonFSharpConverter(unionEncoding=(JsonUnionEncoding.ExternalTag|||JsonUnionEncoding.UnwrapOption|||JsonUnionEncoding.UnwrapRecordCases)))
 let serialize<'a> (a: 'a) = 
     System.Text.Json.JsonSerializer.Serialize(a, opts)
+
+let deserialize<'a> (s: string) =
+    System.Text.Json.JsonSerializer.Deserialize<'a>(s, opts)
+
+type Event =
+    | UserAdded of loginName:string*name:string*shorthand:string
+    | SiteAdded of name:string*symbol:string*country:string
+    | CategoryAdded of name:string*threshold:int
 
 type Test = {
     [<JsonPropertyName("system")>]
@@ -107,9 +124,17 @@ let metadata = {
 
 let metaStr = serialize metadata
 
+let testJson = serialize (UserAdded("sebfia","Sebastian Fialka","SF"))
+
+let tagName = testJson |> getEventType
+
+let des = deserialize<Event> testJson
+
+printfn "%s" testJson
+
 let client = EventStore.Client.createClient IPAddress.Loopback 9781
 
 let response = client.AppendMessage "user-123" 3L {Id=Guid.NewGuid(); EventType="Test"; Metadata=Some metaStr; Data="{\"Bloshuettn\":\"Bist Deppat\"}"} |> Async.RunSynchronously
-let messages = client.ReadStreamMessagesForward "user-123" None EventStore.Native.Contracts.BatchSize.All |> Async.RunSynchronously
+let messages = client.ReadStreamMessagesForward "user-123" None BatchSize.All |> Async.RunSynchronously
 
 let version = client.ReadMessageStoreVersion() |> Async.RunSynchronously
