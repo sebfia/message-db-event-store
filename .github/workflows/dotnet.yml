@@ -24,10 +24,10 @@ jobs:
       run: paket install
     - name: Restore dependencies
       run: dotnet restore
-    - name: Build
-      run: dotnet build -c Release --no-restore /p:Version=${VERSION}
     - name: Set VERSION variable from tag
       run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+    - name: Build
+      run: dotnet build -c Release --no-restore /p:Version=${VERSION}
     - name: Pack Nuget
       run: dotnet pack --configuration Release /p:Version=${VERSION} --no-build --output .
     - name: Publish Nuget
