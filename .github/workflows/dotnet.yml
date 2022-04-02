@@ -16,9 +16,6 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
-        source-url: https://nuget.pkg.github.com/sebfia/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{secrets.NUGET_PUSH}}
     - name: Install paket as global tool
       run: dotnet tool install -g paket
     - name: Restore local tools
@@ -34,7 +31,7 @@ jobs:
     - name: Pack Nuget
       run: dotnet pack --configuration Release /p:Version=${VERSION} ./src/Client/Client.fsproj
     - name: Publish Nuget
-      run: dotnet nuget push ./src/Client/bin/Release/*.nupkg
+      run: dotnet nuget push ./src/Client/bin/Release/*.nupkg --source https://nuget.pkg.github.com/acraven/index.json --api-key ${NUGET_AUTH_TOKEN}
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_PUSH }}
     
