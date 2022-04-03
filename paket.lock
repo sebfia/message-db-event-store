@@ -11,12 +11,6 @@ NUGET
     NLog (4.7.15) - restriction: == net6.0
     System.Reflection.Emit.Lightweight (4.7) - restriction: == net6.0
 
-GROUP Contracts
-STORAGE: NONE
-NUGET
-  remote: https://api.nuget.org/v3/index.json
-    FSharp.Core (6.0.3) - content: none, restriction: == net6.0
-
 GROUP QuestdbEventStore
 STORAGE: NONE
 NUGET
