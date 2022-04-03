@@ -51,7 +51,7 @@ module Program =
         NLog.LogManager.Configuration <- config
         try
             let reader = EnvironmentVariableConfigurationReader() :> IConfigurationReader
-            let parser = ArgumentParser.Create<Arguments>(programName = "Server")
+            let parser = ArgumentParser.Create<Arguments>(programName = "eventstore")
             let results = parser.Parse(args, configurationReader = reader)
             let directory =
                 match results.TryGetResult ConnectionString with

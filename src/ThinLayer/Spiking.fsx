@@ -2,7 +2,7 @@
 // #r "nuget: Npgsql"
 #r "nuget: FsPickler"
 #r "../Client/bin/Debug/net6.0/Contracts.dll"
-#r "../Client/bin/Debug/net6.0/Client.dll"
+#r "../Client/bin/Debug/net6.0/Sebfia.MessageDb.Client.dll"
 // #load "../Contracts/Contracts.fs"
 // #load "ThinLayer.fs"
 // #load "../Server/Engine.fs"
@@ -85,6 +85,7 @@ m.Groups["stream_version"].Value
 open System.Text.Json
 open System.Text.Json.Serialization
 open System.Text.RegularExpressions
+open System
 
 let getEventType =
     let tagRegex = Regex("\\{\\\"(?<EventType>\\w+)\\\"\\:(.*)", RegexOptions.Compiled ||| RegexOptions.Singleline ||| RegexOptions.CultureInvariant)
@@ -126,7 +127,7 @@ let metaStr = serialize metadata
 
 let testJson = serialize (UserAdded("sebfia","Sebastian Fialka","SF"))
 
-let tagName = testJson |> getEventType
+let tagName = testJson |> getEventType |> Option.get
 
 let des = deserialize<Event> testJson
 
@@ -134,7 +135,9 @@ printfn "%s" testJson
 
 let client = EventStore.Client.createClient IPAddress.Loopback 9781
 
-let response = client.AppendMessage "user-123" 3L {Id=Guid.NewGuid(); EventType="Test"; Metadata=Some metaStr; Data="{\"Bloshuettn\":\"Bist Deppat\"}"} |> Async.RunSynchronously
+sprintf "user-%s" (Guid.NewGuid().ToString("N"))
+
+let response = client.AppendMessage (sprintf "user-%s" (Guid.NewGuid().ToString("N"))) -1L {Id=Guid.NewGuid(); EventType=tagName; Metadata=Some metaStr; Data=testJson} |> Async.RunSynchronously
 let messages = client.ReadStreamMessagesForward "user-123" None BatchSize.All |> Async.RunSynchronously
 
 let version = client.ReadMessageStoreVersion() |> Async.RunSynchronously

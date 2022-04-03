@@ -3,9 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>Sebfia.MessageDb.Server</AssemblyName>
+    <AssemblyName>eventstore</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../Stream.fs" />
+    <Compile Include="../Contracts.fs" />
     <Compile Include="RuntimeEnvironment.fs" />
     <Compile Include="Async.fs" />
     <Compile Include="Agent.fs" />
@@ -15,7 +17,7 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Contracts\Contracts.fsproj" />
+    <!-- <ProjectReference Include="..\Contracts\Contracts.fsproj" /> -->
     <ProjectReference Include="..\ThinLayer\ThinLayer.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />

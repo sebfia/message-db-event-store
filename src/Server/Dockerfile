@@ -34,4 +34,4 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 ENV CONNECTION_STRING="Host=localhost;Port=5432;Database=message_store;Username=postgres;Password=summersun"
 WORKDIR /app
 COPY --from=publish /app .
-ENTRYPOINT ["/app/Sebfia.MessageDb.Server"] 
+ENTRYPOINT ["/app/eventstore"] 

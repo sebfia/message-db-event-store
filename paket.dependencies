@@ -17,12 +17,7 @@ group Server
     nuget NATS.Client framework: net6.0
     nuget Npgsql framework: net6.0
     nuget Polly framework: net6.0
-
-group Contracts
-    source https://api.nuget.org/v3/index.json
-    storage:none
-    nuget FSharp.Core content: none, framework: net6.0
-
+    
 group ThinLayer
     source https://api.nuget.org/v3/index.json
     storage:none
