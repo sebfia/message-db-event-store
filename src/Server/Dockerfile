@@ -1,9 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS builder
 RUN dotnet tool install -g paket
 ENV PATH="/root/.dotnet/tools:${PATH}"
-COPY src/Contracts/*.fs /src/Contracts/
-COPY src/Contracts/*.fsproj /src/Contracts/
-COPY src/Contracts/paket.references /src/Contracts/
+COPY src/*.fs /src/
 COPY src/ThinLayer/*.fs /src/ThinLayer/
 COPY src/ThinLayer/*.fsproj /src/ThinLayer/
 COPY src/ThinLayer/paket.references /src/ThinLayer/
