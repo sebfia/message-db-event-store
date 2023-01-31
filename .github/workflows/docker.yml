@@ -40,7 +40,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.PACKAGE_WRITE_TOKEN }}
     - name: BuildAndPush
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v4
       with:
         context: .
         file: ./src/Server/Dockerfile
